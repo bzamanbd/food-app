@@ -1,5 +1,5 @@
 import { Router } from "express" 
-// import superAdminRoutes from '../super_admin_module/routes.js'
+import authRoutes from '../auth_module/routes.js'
 // import shopOwnerRoutes from '../shop_owner_module/routes.js'
 // import salesmanRoutes from '../salesman_module/routes.js'
 
@@ -13,7 +13,7 @@ import { Router } from "express"
 
 const router = Router()
 
-// router.use("/api/super-admin", superAdminRoutes)
+router.use("/api/v1/auth", authRoutes)
 // router.use("/api/shop-owner", shopOwnerRoutes)
 // router.use("/api/salesman", salesmanRoutes)
 // router.use("/api/categories", categoryRoutes)

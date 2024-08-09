@@ -3,20 +3,20 @@ import bcrypt from "bcryptjs"
 import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import appRes from "../utils/appRes.js"
+import userModel from '../models/user_model.js'
 
 
 export const signup = async(req, res,next)=>{ 
-    const {name,email,password} = req.body
-    if(!name || !email || !password) return next(appErr('name, email and password are required'),400) 
+    const {userName,email,password,address,phone,answer} = req.body
+    if(!userName || !email || !password || !address || !phone || !answer) return next(appErr('name, email,password,address,phone and answer are required'),400) 
     const hashedPass = await bcrypt.hash(password, 10) 
     try { 
-        const oldEmail = await prisma.user.findUnique({where:{email}})
+        const exisiting = await userModel.findOne({email})
 
-        if (oldEmail) return next(appErr('user already exist!. name and email should be unique ',401))
+        if (exisiting) return next(appErr(`user already exist with ${email} this email`,401))
         
-        
-        const user = await prisma.user.create({
-            data:{name,email,password:hashedPass,role:'SUPERADMIN'}
+        const user = await userModel.create({ 
+            userName,email,password:hashedPass,address,phone,answer
         })
         user.password = undefined
         appRes(res,201,'','Registration success',{user})
@@ -29,14 +29,15 @@ export const signin = async(req,res, next)=>{
     const {email,password} = req.body
     if(!email || !password) return next(appErr('email and password are required'),400) 
     try {
-        const user = await prisma.user.findUnique({ where:{email}})
-        if (user && bcrypt.compare(password, user.password)) {
+        const user = await userModel.findOne({email})
 
-            const tocken = jwt.sign({id:user.id, email:user.email},process.env.JWT_SECRET,{expiresIn: '30m'}) 
+        const isMatch = await bcrypt.compare(password, user.password)
+        
+        if(!isMatch)return next(appErr('Invalid Credentials',401)) 
+        
+        const tocken = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn: '1h'}) 
 
-            appRes(res,200,'','Login success!',{tocken})
-        }
-        return next(appErr('wrong credential!',401))
+        appRes(res,200,'','Login success!',{tocken})
     } catch (e) {
         return next(appErr(e.message,500))
     } 
