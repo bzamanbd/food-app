@@ -1,19 +1,11 @@
 import { Router } from "express" 
 import authRoutes from '../auth_module/routes.js'
-// import shopOwnerRoutes from '../shop_owner_module/routes.js'
-// import salesmanRoutes from '../salesman_module/routes.js'
-
-// import salesmenRoutes from '../salesman_module/salesman_routes.js'
-// import categoryRoutes from '../category_module/category_routes.js'
-// import productRoutes from '../product_module/product_routes.js' 
-// import salesRoutes from '../sales_module/sales_routes.js'
-// import salesReports from '../reports_module/sales_report/routes.js'
-// import inventoryReports from '../reports_module/inventory_report/routes.js'
-// import profitReports from '../reports_module/profit_report/routes.js'
+import usersRoutes from '../user_module/routes.js'
 
 const router = Router()
 
 router.use("/api/v1/auth", authRoutes)
+router.use("/api/v1/users", usersRoutes)
 // router.use("/api/shop-owner", shopOwnerRoutes)
 // router.use("/api/salesman", salesmanRoutes)
 // router.use("/api/categories", categoryRoutes)
