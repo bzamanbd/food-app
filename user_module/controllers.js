@@ -121,4 +121,19 @@ export const updatePassword = async(req,res, next)=>{
 }
 
 
+export const deleteOwnAccount = async(req,res, next)=>{ 
+    const _id = req.user.id
+
+    if(!_id) return next(appErr('_id is required',400)) 
+
+    try {
+        const user = await userModel.findByIdAndDelete({_id})
+        appRes(res,200,'','Your account is deleted successfully!',{})
+    } catch (e) {
+        return next(appErr(e.message,500))
+    } 
+
+}
+
+
 
