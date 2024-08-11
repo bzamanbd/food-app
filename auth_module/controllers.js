@@ -7,18 +7,26 @@ import userModel from '../models/user_model.js'
 
 
 export const signup = async(req, res,next)=>{ 
-    const {userName,email,password,address,phone,answer} = req.body
-    if(!userName || !email || !password || !address || !phone || !answer) return next(appErr('name, email,password,address,phone and answer are required'),400) 
+    const {userName,email,password,address,phone,question,answer} = req.body
+    if(!userName || !email || !password || !address || !phone || !question || !answer) return next(appErr('name,email,password,address,phone,question and answer are required'),400) 
     const hashedPass = await bcrypt.hash(password, 10) 
+    const hashedAnswer = await bcrypt.hash(answer, 10) 
     try { 
         const exisiting = await userModel.findOne({email})
 
         if (exisiting) return next(appErr(`user already exist with ${email} this email`,401))
         
         const user = await userModel.create({ 
-            userName,email,password:hashedPass,address,phone,answer
+            userName,
+            email,
+            password:hashedPass,
+            address,
+            phone,
+            question,
+            answer:hashedAnswer
         })
         user.password = undefined
+        user.answer = undefined
         appRes(res,201,'','Registration success',{user})
     } catch (e) {
         return next(appErr(e.message,500))

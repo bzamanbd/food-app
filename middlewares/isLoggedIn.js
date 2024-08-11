@@ -19,7 +19,7 @@ export const isLoggedIn = async (req, res, next) => {
 
     const user = await userModel.findById({_id:payload.id})
     
-    console.log(user);
+    // console.log(user);
     
     if (!user) return next(appErr('Unauthorized',401))
 
