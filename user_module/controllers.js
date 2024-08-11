@@ -1,6 +1,5 @@
 import appErr from "../utils/appErr.js"
 import bcrypt from "bcryptjs"
-import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import appRes from "../utils/appRes.js"
 import userModel from '../models/user_model.js'
@@ -57,7 +56,6 @@ export const updateProfile = async(req,res, next)=>{
 
 }
 
-
 export const fetchQuestion = async(req, res,next)=>{ 
     const {email} = req.body
     if(!email)return next(appErr('email is required',400))
@@ -78,7 +76,7 @@ export const fetchQuestion = async(req, res,next)=>{
 
 export const resetPassword = async(req,res, next)=>{ 
     const {email,newPassword,answer} = req.body
-    if(!email || !newPassword || !answer) return next(appErr('email,newPassword and answer are required'),400) 
+    if(!email || !newPassword || !answer) return next(appErr('email,newPassword and answer are required',400)) 
 
     try {
         const user = await userModel.findOne({email})
@@ -91,9 +89,31 @@ export const resetPassword = async(req,res, next)=>{
         user.password = hashedPassword
         await user.save()
 
-        user.answer = undefined
         user.password = undefined
         appRes(res,200,'','Password reset success!',{user})
+    } catch (e) {
+        return next(appErr(e.message,500))
+    } 
+
+}
+
+export const updatePassword = async(req,res, next)=>{ 
+    const _id = req.user.id
+    const {oldPassword,newPassword} = req.body 
+    
+    if(!oldPassword || !newPassword) return next(appErr('oldPassword and newPassword are required',400)) 
+
+    try {
+        const user = await userModel.findById({_id})
+        if(!user)return next(appErr('User not found!',404)) 
+        const isMatchOldPassword = await bcrypt.compare(oldPassword, user.password);
+        if(!isMatchOldPassword) return next(appErr('Invalid old password',400))
+        const hashedPassword = await bcrypt.hash(newPassword,10)
+        user.password = hashedPassword
+        await user.save()
+
+        user.password = undefined
+        appRes(res,200,'','Password update success!',{user})
     } catch (e) {
         return next(appErr(e.message,500))
     } 
