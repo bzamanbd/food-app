@@ -4,7 +4,7 @@ import colors from 'colors'
 import globalErrorHandler from './middlewares/globalErrorHandler.js'
 import router from './routes/index.js'
 import appRes from './utils/appRes.js';
-import { connectDb } from './db_config/config.js'
+import { connectDb} from './db_config/config.js'
 
 connectDb()
 

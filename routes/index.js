@@ -1,12 +1,13 @@
 import { Router } from "express" 
 import authRoutes from '../auth_module/routes.js'
 import usersRoutes from '../user_module/routes.js'
+import restaurantRoutes from '../restaurant_module/routes.js'
 
 const router = Router()
 
 router.use("/api/v1/auth", authRoutes)
 router.use("/api/v1/users", usersRoutes)
-// router.use("/api/shop-owner", shopOwnerRoutes)
+router.use("/api/v1/restaurants", restaurantRoutes)
 // router.use("/api/salesman", salesmanRoutes)
 // router.use("/api/categories", categoryRoutes)
 // router.use("/api/products", productRoutes)

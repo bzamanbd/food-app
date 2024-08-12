@@ -127,7 +127,9 @@ export const deleteOwnAccount = async(req,res, next)=>{
     if(!_id) return next(appErr('_id is required',400)) 
 
     try {
-        const user = await userModel.findByIdAndDelete({_id})
+        const user = await userModel.findById({_id})
+        if (!user) return next(appErr('User not found!',404))
+        await userModel.findByIdAndDelete({_id})
         appRes(res,200,'','Your account is deleted successfully!',{})
     } catch (e) {
         return next(appErr(e.message,500))
