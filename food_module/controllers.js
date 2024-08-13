@@ -6,7 +6,7 @@ import foodModel from '../models/food_model.js';
 
 export const createFood = async(req, res,next)=>{ 
     const payload = req.body
-    if(!payload.title || !payload.description || !payload.price || !payload.restaurantId) return next(appErr('title,description,price are required',400))
+    if(!payload.title || !payload.description || !payload.price || !payload.restaurant) return next(appErr('title,description,price and restaurant are required',400))
    
     try { 
         const food = new foodModel(payload)
@@ -28,6 +28,25 @@ export const fetchFoods = async(req, res,next)=>{
         
         if (foods.length<1) return appRes(res,200,'',`${foods.length} food items found!`,{foods})
 
+        appRes(res,200,'',`${foods.length} food items found!`,{foods})
+    } catch (e) {
+            return next(appErr(e.message,500))
+        }
+}
+
+export const fetchFoodsByRestaurantId = async(req, res,next)=>{ 
+    const restaurantId = req.params.id 
+    if(!restaurantId) return next(appErr('restaurantId is required',400))
+    
+    if (!mongoose.Types.ObjectId.isValid(restaurantId)) return next(appErr('Invalid ID format',400)) 
+
+    try { 
+        const foods = await foodModel.find({restaurant:restaurantId}).populate('restaurant','title')
+        
+        if (!foods) return next(appErr('Food not found!',404))
+        
+        if (foods.length<1) return appRes(res,200,'',`${foods.length} food items found!`,{foods})
+        
         appRes(res,200,'',`${foods.length} food items found!`,{foods})
     } catch (e) {
             return next(appErr(e.message,500))

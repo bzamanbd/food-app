@@ -15,10 +15,10 @@ const foodSchema = new Schema(
             type: Number,
             required: [true,"Price is required"]
         },
-        restaurantId: {
+        restaurant: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Restaurant",
-            required: [true, "Restaurant id is required"]
+            required: [true, "Restaurant is required"]
           },
         imageUrl: {
           type: String,
