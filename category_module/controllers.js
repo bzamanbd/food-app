@@ -34,7 +34,6 @@ export const fetchCategories = async(req, res,next)=>{
         }
 }
 
-
 export const fetchCategoryById = async(req, res,next)=>{ 
     const _id = req.params.id 
     if(!_id) return next(appErr('id is required',400))
@@ -51,8 +50,6 @@ export const fetchCategoryById = async(req, res,next)=>{
             return next(appErr(e.message,500))
         }
 }
-
-
 
 export const updatCategory = async(req, res,next)=>{ 
     const _id = req.params.id
@@ -73,8 +70,6 @@ export const updatCategory = async(req, res,next)=>{
         }
 }
 
-
-
 export const deleteCategory = async(req, res,next)=>{ 
     const _id = req.params.id 
     if(!_id) return next(appErr('id is required',400))
@@ -92,7 +87,3 @@ export const deleteCategory = async(req, res,next)=>{
             return next(appErr(e.message,500))
         }
 }
-
-
-
-
