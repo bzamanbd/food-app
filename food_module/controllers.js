@@ -41,8 +41,8 @@ export const fetchFoodsByRestaurantId = async(req, res,next)=>{
     if (!mongoose.Types.ObjectId.isValid(restaurantId)) return next(appErr('Invalid ID format',400)) 
 
     try { 
-        const foods = await foodModel.find({restaurant:restaurantId}).populate('restaurant','title')
-        
+        const foods = await foodModel.find({restaurant:restaurantId}).populate('restaurant','title time')
+
         if (!foods) return next(appErr('Food not found!',404))
         
         if (foods.length<1) return appRes(res,200,'',`${foods.length} food items found!`,{foods})
