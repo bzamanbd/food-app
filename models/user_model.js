@@ -28,7 +28,7 @@ const userSchema = new Schema(
             required: [true, "phone number is require"],
         },
 
-        usertype: {
+        role: {
             type: String,
             required: [true, "user type is required"],
             default: "client",

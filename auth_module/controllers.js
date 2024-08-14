@@ -4,17 +4,19 @@ import jwt from 'jsonwebtoken'
 import 'dotenv/config'
 import appRes from "../utils/appRes.js"
 import userModel from '../models/user_model.js'
+import adminEmails from "../utils/adminEmails.js"
 
 
 export const signup = async(req, res,next)=>{ 
-    const {userName,email,password,address,phone,question,answer} = req.body
+    const {userName,email,password,address,phone,question,answer,role} = req.body
     if(!userName || !email || !password || !address || !phone || !question || !answer) return next(appErr('name,email,password,address,phone,question and answer are required'),400) 
     const hashedPass = await bcrypt.hash(password, 10) 
     const hashedAnswer = await bcrypt.hash(answer, 10) 
     try { 
-        const exisiting = await userModel.findOne({email})
-
-        if (exisiting) return next(appErr(`user already exist with ${email} this email`,401))
+        const emailExists = await userModel.findOne({email})
+        if (emailExists) return next(appErr(`user already exist with ${email} this email`,401))
+        
+        if(role === 'admin' && !adminEmails.includes(email)) return next(appErr('You are not authorized to create an admin account',403))
         
         const user = await userModel.create({ 
             userName,
@@ -23,7 +25,8 @@ export const signup = async(req, res,next)=>{
             address,
             phone,
             question,
-            answer:hashedAnswer
+            answer:hashedAnswer,
+            role
         })
         user.password = undefined
         user.answer = undefined
