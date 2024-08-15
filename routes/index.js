@@ -10,7 +10,7 @@ const router = Router()
 
 router.use("/api/v1/auth", authRoutes)
 router.use("/api/v1/users", usersRoutes)
-router.use("/api/v1/restaurants", restaurantRoutes)
+router.use("/api/v1/restaurant", restaurantRoutes)
 router.use("/api/v1/categories", categoryRoutes)
 router.use("/api/v1/foods", foodsRoutes)
 router.use("/api/v1/orders", orderRoutes)

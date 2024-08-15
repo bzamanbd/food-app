@@ -19,36 +19,34 @@ const userSchema = new Schema(
             required: [true, "email name is required"],
         },
 
-        address: {
-            type: Array,
-        },
-
         phone: {
             type: String,
             required: [true, "phone number is require"],
         },
-
-        role: {
-            type: String,
-            required: [true, "user type is required"],
-            default: "client",
-            enum: ["client", "admin", "vendor", "driver"],
-        },
-
-        profile: {
-            type: String,
-            default: "https://cdn.pixabay.com/photo/2020/07/01/12/58/icon-5359553_640.png",
-        },
         
+        address: { type: Array },
+
+        avatar: {
+            type: String,
+            default: "",
+        },
+
         question: {
             type: String,
-            required: [true, "Question is required"],
+            required: [true, "Question to reset password is required"],
         },
         
         answer: {
             type: String,
-            required: [true, "Asnwer is required"],
+            required: [true, "Asnwer to reset password is required"],
         },
+
+        role: {
+            type: String,
+            default: "client",
+            enum: ["client", "admin", "vendor", "driver"],
+        },
+        
     },
     { timestamps:true }
 );

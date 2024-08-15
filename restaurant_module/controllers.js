@@ -6,18 +6,26 @@ import restaurantModel from '../models/restaurant_model.js'
 
 
 export const createRestaurant = async(req, res,next)=>{ 
-    const {title,imageUrl,foods,time,pickup,delivery,isOpen,logoUrl,rating,ratingCount,code,coords} = req.body
-    if(!title || ! coords) return next(appErr('title and address are required',400))
+    const {title,hotline, foods,time,pickup,delivery,isOpen,rating,ratingCount,code,coords} = req.body
+    
+    if(!title || !hotline) return next(appErr('title & hotline ared required',400)) 
+
+    const logo = req.file ? req.processedLogo : "";
+   
     try { 
+        const isExists = await restaurantModel.find({})
+
+        if(isExists.length>0)return next(appErr('Invalid request. Restaurant is available',400))
+
         const restaurant = new restaurantModel({ 
             title,
-            imageUrl,
+            hotline,
+            logo,
             foods,
             time,
             pickup,
             delivery,
             isOpen,
-            logoUrl,
             rating,
             ratingCount,
             code,

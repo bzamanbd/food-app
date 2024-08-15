@@ -5,18 +5,28 @@ import 'dotenv/config'
 import appRes from "../utils/appRes.js"
 import userModel from '../models/user_model.js'
 import adminEmails from "../utils/adminEmails.js"
+import isValidEmail from '../utils/isValidEmail.js';
 
 
 export const signup = async(req, res,next)=>{ 
     const {userName,email,password,address,phone,question,answer,role} = req.body
-    if(!userName || !email || !password || !address || !phone || !question || !answer) return next(appErr('name,email,password,address,phone,question and answer are required'),400) 
+    
+    if(!userName || !email || !password || !phone || !question || !answer) return next(appErr('name,email,password,phone,question and answer are required'),400) 
+    
+    if(!isValidEmail(email))return next(appErr('Invalid email format',400))
+    
     const hashedPass = await bcrypt.hash(password, 10) 
     const hashedAnswer = await bcrypt.hash(answer, 10) 
+
+    const avatar = req.file ? req.processedAvatar : "";
+
     try { 
         const emailExists = await userModel.findOne({email})
-        if (emailExists) return next(appErr(`user already exist with ${email} this email`,401))
+        if (emailExists) return next(appErr(`${email} email is exists. Try another`,401))
         
-        if(role === 'admin' && !adminEmails.includes(email)) return next(appErr('You are not authorized to create an admin account',403))
+        if(role === 'admin' && !adminEmails.includes(email))return next(appErr('You are not authorized to create an admin account',403))
+        
+        const getRole = (email) => adminEmails.includes(email) ? 'admin' : role
         
         const user = await userModel.create({ 
             userName,
@@ -24,9 +34,10 @@ export const signup = async(req, res,next)=>{
             password:hashedPass,
             address,
             phone,
+            avatar,
             question,
             answer:hashedAnswer,
-            role
+            role:getRole(email)
         })
         user.password = undefined
         user.answer = undefined
@@ -38,7 +49,8 @@ export const signup = async(req, res,next)=>{
 
 export const signin = async(req,res, next)=>{ 
     const {email,password} = req.body
-    if(!email || !password) return next(appErr('email and password are required'),400) 
+    if(!email || !password) return next(appErr('email and password are required'),400)
+    if(!isValidEmail(email))return next(appErr('Invalid email format',400)) 
     try {
         const user = await userModel.findOne({email})
 

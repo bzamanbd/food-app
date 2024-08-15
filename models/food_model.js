@@ -7,42 +7,45 @@ const foodSchema = new Schema(
           type: String,
           required: [true, "Food title is required"],
         },
+
         description: {
             type: String,
             required: [true, "Description is required"],
           },
-        price:{ 
+
+        price: { 
             type: Number,
             required: [true,"Price is required"]
         },
+
         restaurant: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Restaurant",
             required: [true, "Restaurant is required"]
           },
-        imageUrl: {
-          type: String,
-          default:""
-        },
-        category:{
-            type: String
-        },
-        foodTags:{
-            type:Array
-        },
-        code:{
-            type:String
-        },
+        
+        images: { type: Array },
+
+        videos:{ type: Array },
+
+        category:{ type: String },
+
+        foodTags:{ type:Array },
+
+        code:{ type:String },
+
         isAvailable:{
             type:Boolean,
             default:true
         },
+
         rating:{
             type: Number,
             default:1,
             min:1,
             max:5
         },
+        
         ratingCount:{
             type: String
         }
