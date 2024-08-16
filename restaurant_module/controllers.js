@@ -3,24 +3,29 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 import appRes from "../utils/appRes.js"
 import restaurantModel from '../models/restaurant_model.js'
+import { deleteFile, processImage } from "../utils/imageProcessor.js"
+import path from "path"
 
 
 export const createRestaurant = async(req, res,next)=>{ 
-    const {title,hotline, foods,time,pickup,delivery,isOpen,rating,ratingCount,code,coords} = req.body
+    const {title,hotline,foods,time,pickup,delivery,isOpen,rating,ratingCount,code,coords} = req.body
     
     if(!title || !hotline) return next(appErr('title & hotline ared required',400)) 
 
-    const logo = req.file ? req.processedLogo : "";
-   
     try { 
-        const isExists = await restaurantModel.find({})
+        
+        const exists = await restaurantModel.findOne({title})
 
-        if(isExists.length>0)return next(appErr('Invalid request. Restaurant is available',400))
+        if(exists){
+            if(req.file){ 
+                deleteFile(path.join('./temp', req.file.filename))
+            }
+            return next(appErr('Restaurant exists',409))
+        }
 
         const restaurant = new restaurantModel({ 
             title,
             hotline,
-            logo,
             foods,
             time,
             pickup,
@@ -29,13 +34,33 @@ export const createRestaurant = async(req, res,next)=>{
             rating,
             ratingCount,
             code,
-            coords
+            coords,
         })
+
         await restaurant.save()
+
+        if (req.file) {
+            const filename = await processImage(
+                path.join('./temp', req.file.filename),
+                './public/logos',
+                100,
+                90
+            );
+
+            restaurant.logo = path.join('./public/logos', filename);
+            await restaurant.save();
+
+            // Clean up temporary file after processing
+            deleteFile(path.join('./temp', req.file.filename));
+
+        }
 
         appRes(res,200,'',`${restaurant.title} is created!`,{restaurant})
 
     } catch (e) {
+        if (req.file) {
+            deleteFile(path.join('./temp', req.file.filename)); // Clean up on error
+        }
         return next(appErr(e.message,500))
     }
 }

@@ -56,15 +56,15 @@ const restaurantSchema = new Schema(
           type: String,
         },
 
-        // coords: {
-        //   id: { type: String },
-        //   latitude: { type: Number },
-        //   latitudeDelta: { type: Number },
-        //   longitude: { type: Number },
-        //   longitudeDelta: { type: Number },
-        //   address: { type: String },
-        //   title: { type: String },
-        // },
+        coords: {
+          id: { type: String },
+          latitude: { type: Number },
+          latitudeDelta: { type: Number },
+          longitude: { type: Number },
+          longitudeDelta: { type: Number },
+          address: { type: String },
+          title: { type: String },
+        },
     },
     { timestamps:true }
 );
