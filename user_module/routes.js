@@ -1,6 +1,6 @@
 import {Router} from "express"
-import { isLoggedIn } from "../middlewares/isLoggedIn.js"
 import {fetchUsers,fetchProfile,updateProfile,fetchQuestion,resetPassword,updatePassword,deleteOwnAccount} from "./controllers.js"
+import { isLoggedIn } from "../middlewares/authMiddlewares.js"
 
 
 const routes = Router() 

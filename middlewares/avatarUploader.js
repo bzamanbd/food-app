@@ -9,6 +9,7 @@ const fileFilter = (req, file, cb) => {
   }
   cb(null, true);
 }
+
 const limits = {
   fileSize: 10 * 1024 * 1024,
   files: 1, 

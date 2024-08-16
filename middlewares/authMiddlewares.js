@@ -31,3 +31,13 @@ export const isLoggedIn = async (req, res, next) => {
     return next(appErr('Tocken is expired or incorrect',498))
   }
   }
+
+  export const isAdmin = async (req, res, next) => {
+    try {
+      const role = req.user.role    
+      if (role !== 'admin')return next(appErr('Unauthorized access',401))
+      next(); 
+    } catch (e) {
+      return next(appErr(e.message,500))
+    }
+  }

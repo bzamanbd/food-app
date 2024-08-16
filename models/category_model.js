@@ -9,7 +9,7 @@ const categorySchema = new Schema(
             unique:true
         },
 
-        imageUrl:{
+        image:{
             type: String,
             default:""
         }

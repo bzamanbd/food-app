@@ -6,10 +6,16 @@ import categoryModel from '../models/category_model.js';
 
 
 export const createCategory = async(req, res,next)=>{ 
-    const {title,imageUrl} = req.body
-    if(!title) return next(appErr('title is required',400))
+    const {title} = req.body
+    if(!title)return next(appErr('title is required',400))
+
+    const image = req.file ? req.processedImage : "";
+
     try { 
-        const category = new categoryModel({ title, imageUrl})
+        const exists = await categoryModel.findOne({title})
+        if(exists)return next(appErr('Category exists',409))
+        
+        const category = new categoryModel({ title, image})
         await category.save()
 
         appRes(res,200,'',`${category.title} is created!`,{category})

@@ -6,7 +6,7 @@ import foodModel from '../models/food_model.js';
 
 export const createFood = async(req, res,next)=>{ 
     const payload = req.body
-    if(!payload.title || !payload.description || !payload.price || !payload.restaurant) return next(appErr('title,description,price and restaurant are required',400))
+    if(!payload.title || !payload.description || !payload.category || !payload.price || !payload.restaurant) return next(appErr('title,description,category,price and restaurant are required',400))
    
     try { 
         const food = new foodModel(payload)

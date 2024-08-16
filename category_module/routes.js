@@ -1,17 +1,16 @@
 import {Router} from "express"
-import { isLoggedIn } from "../middlewares/isLoggedIn.js"
 import {createCategory,fetchCategories,fetchCategoryById,updatCategory,deleteCategory} from "./controllers.js"
-import { isAdmin } from "../middlewares/isAdmin.js"
+import { isAdmin, isLoggedIn } from "../middlewares/authMiddlewares.js"
+import { createImageLoader } from '../middlewares/singleImageLoader.js';
 
+const categoryImageLoader = createImageLoader();
 
 const routes = Router() 
 
-
-routes.post("/category",isLoggedIn,isAdmin,createCategory)
+routes.post("/category",isLoggedIn,isAdmin,categoryImageLoader('categories','image',100,90),createCategory)
 routes.get("/",fetchCategories)
 routes.get("/category/:id",fetchCategoryById)
 routes.put("/category/:id",isLoggedIn,isAdmin,updatCategory)
 routes.delete("/category/:id",isLoggedIn,isAdmin,deleteCategory)
-
 
 export default routes

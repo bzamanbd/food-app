@@ -12,6 +12,12 @@ const foodSchema = new Schema(
             type: String,
             required: [true, "Description is required"],
           },
+        
+        category:{ 
+            type: mongoose.Schema.Types.ObjectId,
+            ref:"Category",
+            required: [true, "Category is required"]
+        },
 
         price: { 
             type: Number,
@@ -27,8 +33,6 @@ const foodSchema = new Schema(
         images: { type: Array },
 
         videos:{ type: Array },
-
-        category:{ type: String },
 
         foodTags:{ type:Array },
 

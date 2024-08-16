@@ -18,7 +18,7 @@ export const signup = async(req, res,next)=>{
     const hashedPass = await bcrypt.hash(password, 10) 
     const hashedAnswer = await bcrypt.hash(answer, 10) 
 
-    const avatar = req.file ? req.processedAvatar : "";
+    const avatar = req.file ? req.processedImage : "";
 
     try { 
         const emailExists = await userModel.findOne({email})
