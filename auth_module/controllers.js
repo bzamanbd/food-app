@@ -6,45 +6,74 @@ import appRes from "../utils/appRes.js"
 import userModel from '../models/user_model.js'
 import adminEmails from "../utils/adminEmails.js"
 import isValidEmail from '../utils/isValidEmail.js';
-
+import path from 'path';
+import { deleteFile, processImage } from "../utils/imageProcessor.js"
 
 export const signup = async(req, res,next)=>{ 
+    
     const {userName,email,password,address,phone,question,answer,role} = req.body
     
     if(!userName || !email || !password || !phone || !question || !answer) return next(appErr('name,email,password,phone,question and answer are required'),400) 
     
     if(!isValidEmail(email))return next(appErr('Invalid email format',400))
     
-    const hashedPass = await bcrypt.hash(password, 10) 
-    const hashedAnswer = await bcrypt.hash(answer, 10) 
-
-    const avatar = req.file ? req.processedImage : "";
-
     try { 
+        
         const emailExists = await userModel.findOne({email})
-        if (emailExists) return next(appErr(`${email} email is exists. Try another`,401))
+
+        if (emailExists){
+            if(req.file){ 
+                deleteFile(path.join('./temp', req.file.filename))
+            }
+            return next(appErr(`${email} email is exists. Try another`,401))
+        }
         
         if(role === 'admin' && !adminEmails.includes(email))return next(appErr('You are not authorized to create an admin account',403))
         
-        const getRole = (email) => adminEmails.includes(email) ? 'admin' : role
+        const hashedPass = await bcrypt.hash(password, 10) 
+        const hashedAnswer = await bcrypt.hash(answer, 10) 
         
-        const user = await userModel.create({ 
+        const getRole = (email) => adminEmails.includes(email) ? 'admin' : role
+
+        const user = new userModel({ 
             userName,
             email,
             password:hashedPass,
             address,
             phone,
-            avatar,
             question,
             answer:hashedAnswer,
             role:getRole(email)
         })
+
+        await user.save();
+        
+        if(req.file){ 
+            const filename = await processImage(
+                path.join('./temp', req.file.filename),
+                './public/avatars',
+                100,
+                90
+            );
+            user.avatar = path.join('./public/avatars', filename);
+            await user.save();
+
+            // Clean up temporary file after processing
+            deleteFile(path.join('./temp', req.file.filename));
+        }
+        
+
         user.password = undefined
         user.answer = undefined
         appRes(res,201,'','Registration success',{user})
+
     } catch (e) {
+        if (req.file) {
+            deleteFile(path.join('./temp', req.file.filename)); // Clean up on error
+        }
         return next(appErr(e.message,500))
     }
+
 }
 
 export const signin = async(req,res, next)=>{ 

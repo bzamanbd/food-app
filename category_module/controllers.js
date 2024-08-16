@@ -3,24 +3,47 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 import appRes from "../utils/appRes.js"
 import categoryModel from '../models/category_model.js';
+import { deleteFile, processImage } from "../utils/imageProcessor.js";
+import path from "path";
 
 
 export const createCategory = async(req, res,next)=>{ 
     const {title} = req.body
     if(!title)return next(appErr('title is required',400))
 
-    const image = req.file ? req.processedImage : "";
-
     try { 
         const exists = await categoryModel.findOne({title})
-        if(exists)return next(appErr('Category exists',409))
+        if(exists){
+            if(req.file){ 
+                deleteFile(path.join('./temp', req.file.filename))
+            }
+            return next(appErr('Category exists',409))
+        }
         
-        const category = new categoryModel({ title, image})
+        const category = new categoryModel({ title })
         await category.save()
+        
+        if (req.file) {
+            const filename = await processImage(
+                path.join('./temp', req.file.filename),
+                './public/categories',
+                100,
+                90
+            );
+
+            category.image = path.join('./public/categories', filename);
+            await category.save();
+
+            // Clean up temporary file after processing
+            deleteFile(path.join('./temp', req.file.filename));
+        }
 
         appRes(res,200,'',`${category.title} is created!`,{category})
 
     } catch (e) {
+        if (req.file) {
+            deleteFile(path.join('./temp', req.file.filename)); // Clean up on error
+        }
         return next(appErr(e.message,500))
     }
 }
