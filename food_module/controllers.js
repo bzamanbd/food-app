@@ -4,13 +4,14 @@ import mongoose from 'mongoose'
 import appRes from "../utils/appRes.js"
 import foodModel from '../models/food_model.js';
 import mediaProcessor from '../utils/mediaProcessor.js'
+import pathTrimmer from "../utils/pathTrimmer.js";
 
 export const createFood = async(req, res,next)=>{ 
+
     const { images = [], videos = [] } = req.files;
     const imageFolderName = 'images'; // Dynamic folder name for images
     const videoFolderName = 'videos'; // Dynamic folder name for videos
     
-
     try { 
         const {title,description,category,price,foodTags,code,isAvailable,rating,ratingCount} = req.body
 
@@ -30,37 +31,16 @@ export const createFood = async(req, res,next)=>{
         await food.save()
 
         // Process and move images
-        const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia(images, imageFolderName, true) : [];
+        const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia(images, imageFolderName, 800, 80, true, 360) : [];
 
         // Process and move videos
-        const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia(videos, videoFolderName, false) : [];
+        const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia(videos, videoFolderName, 800, 80, false, 360) : [];
 
         const foodImages = []
         const foodVideos = []
 
-        if (processedImages.length>0) {
-
-            processedImages.forEach(image => {
-                const fullPath = image; 
-                // Find the index where "public" starts in the full path
-                const publicIndex = fullPath.indexOf('public');
-                // Extract the path starting from "public"
-                const relativePath = fullPath.substring(publicIndex);
-                foodImages.push(relativePath);
-            });
-        }
-
-        if (processedVideos.length>0) {
-
-            processedVideos.forEach(video => {
-                const fullPath = video; 
-                // Find the index where "public" starts in the full path
-                const publicIndex = fullPath.indexOf('public');
-                // Extract the path starting from "public"
-                const relativePath = fullPath.substring(publicIndex);
-                foodVideos.push(relativePath);
-            });
-        }
+        pathTrimmer(processedImages,foodImages);
+        pathTrimmer(processedVideos,foodVideos);
         
         if(food){ 
             food.images = foodImages;
@@ -68,7 +48,7 @@ export const createFood = async(req, res,next)=>{
         }
 
         await food.save();
-        
+
         await mediaProcessor.deleteTempFiles([...images, ...videos]);
 
         appRes(res,201,'',`${food.title} is created!`,{food})

@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 
 const mediaProcessor = {
-  processAndMoveMedia: async (files, destinationDir, isImage = true) => {
+  processAndMoveMedia: async (files, destinationDir, imgSize, imgQuality, isImage = true, videoSize) => {
     const processedFiles = [];
 
     for (const file of files) {
@@ -29,12 +29,14 @@ const mediaProcessor = {
             if (isImage) {
             // Process image using sharp
             await sharp(file.path)
-                .resize(800) // Example resize, can be adjusted or omitted
+                .resize(imgSize) // Example resize, can be adjusted or omitted
+                .jpeg({quality:imgQuality})
                 .toFile(outputFilePath);
             } else {
             // Process video using ffmpeg
             await new Promise((resolve, reject) => {
                 ffmpeg(file.path)
+                .size(`${videoSize}x?`)
                 .output(outputFilePath)
                 .on('end', resolve)
                 .on('error', reject)
