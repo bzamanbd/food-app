@@ -10,13 +10,12 @@ const foodSchema = new Schema(
 
         description: {
             type: String,
-            required: [true, "Description is required"],
+            default:""
           },
         
         category:{ 
-            type: mongoose.Schema.Types.ObjectId,
-            ref:"Category",
-            required: [true, "Category is required"]
+            type: String,
+            default:""
         },
 
         price: { 
@@ -26,8 +25,7 @@ const foodSchema = new Schema(
 
         restaurant: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Restaurant",
-            required: [true, "Restaurant is required"]
+            ref: "Resturant",
           },
         
         images: { type: Array },

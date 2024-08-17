@@ -3,18 +3,79 @@ import 'dotenv/config'
 import mongoose from 'mongoose'
 import appRes from "../utils/appRes.js"
 import foodModel from '../models/food_model.js';
+import mediaProcessor from '../utils/mediaProcessor.js'
 
 export const createFood = async(req, res,next)=>{ 
-    const payload = req.body
-    if(!payload.title || !payload.description || !payload.category || !payload.price || !payload.restaurant) return next(appErr('title,description,category,price and restaurant are required',400))
-   
+    const { images = [], videos = [] } = req.files;
+    const imageFolderName = 'images'; // Dynamic folder name for images
+    const videoFolderName = 'videos'; // Dynamic folder name for videos
+    
+
     try { 
-        const food = new foodModel(payload)
+        const {title,description,category,price,foodTags,code,isAvailable,rating,ratingCount} = req.body
+
+        const food = new foodModel({ 
+            title,
+            description,
+            category, 
+            price,
+            images,
+            videos,
+            foodTags,
+            code,
+            isAvailable,
+            rating,
+            ratingCount
+        })
         await food.save()
+
+        // Process and move images
+        const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia(images, imageFolderName, true) : [];
+
+        // Process and move videos
+        const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia(videos, videoFolderName, false) : [];
+
+        const foodImages = []
+        const foodVideos = []
+
+        if (processedImages.length>0) {
+
+            processedImages.forEach(image => {
+                const fullPath = image; 
+                // Find the index where "public" starts in the full path
+                const publicIndex = fullPath.indexOf('public');
+                // Extract the path starting from "public"
+                const relativePath = fullPath.substring(publicIndex);
+                foodImages.push(relativePath);
+            });
+        }
+
+        if (processedVideos.length>0) {
+
+            processedVideos.forEach(video => {
+                const fullPath = video; 
+                // Find the index where "public" starts in the full path
+                const publicIndex = fullPath.indexOf('public');
+                // Extract the path starting from "public"
+                const relativePath = fullPath.substring(publicIndex);
+                foodVideos.push(relativePath);
+            });
+        }
+        
+        if(food){ 
+            food.images = foodImages;
+            food.videos = foodVideos;
+        }
+
+        await food.save();
+        
+        await mediaProcessor.deleteTempFiles([...images, ...videos]);
 
         appRes(res,201,'',`${food.title} is created!`,{food})
 
     } catch (e) {
+        // If post creation fails, delete uploaded files from temp
+        await mediaProcessor.deleteTempFiles([...images, ...videos]);
         return next(appErr(e.message,500))
     }
 }
