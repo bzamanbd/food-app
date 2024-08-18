@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 
 
 const mediaProcessor = {
-  processAndMoveMedia: async (files, destinationDir, imgSize, imgQuality, isImage = true, videoSize) => {
+  processAndMoveMedia: async ({files, destinationDir, imgSize, imgQuality, isImage = true, videoSize}={}) => {
     const processedFiles = [];
 
     for (const file of files) {

@@ -1,6 +1,8 @@
-const pathTrimmer = (oldItems,newItems)=>{ 
-    if (oldItems.length>0) {
-        oldItems.forEach(item => {
+
+
+export const pathTrimmer = ({items,newItems}) =>{ 
+    if (items.length>0) {
+        items.forEach(item => {
             const fullPath = item; 
             // Find the index where "public" starts in the full path
             const publicIndex = fullPath.indexOf('public');
@@ -11,4 +13,4 @@ const pathTrimmer = (oldItems,newItems)=>{
     }
     return newItems
 }
-export default pathTrimmer;
+

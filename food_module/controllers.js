@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 import appRes from "../utils/appRes.js"
 import foodModel from '../models/food_model.js';
 import mediaProcessor from '../utils/mediaProcessor.js'
-import pathTrimmer from "../utils/pathTrimmer.js";
+import { pathTrimmer } from '../utils/pathTrimmer.js';
 
 export const createFood = async(req, res,next)=>{ 
 
@@ -31,16 +31,16 @@ export const createFood = async(req, res,next)=>{
         await food.save()
 
         // Process and move images
-        const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia(images, imageFolderName, 800, 80, true, 360) : [];
+        const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia({files:images,destinationDir:imageFolderName,imgSize:800,imgQuality:80}) : [];
 
         // Process and move videos
-        const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia(videos, videoFolderName, 800, 80, false, 360) : [];
+        const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia({files:videos,destinationDir:videoFolderName,isImage:false,videoSize:360}) : [];
 
         const foodImages = []
         const foodVideos = []
 
-        pathTrimmer(processedImages,foodImages);
-        pathTrimmer(processedVideos,foodVideos);
+        pathTrimmer({items:processedImages,newItems:foodImages})
+        pathTrimmer({items:processedVideos,newItems:foodVideos})
         
         if(food){ 
             food.images = foodImages;
