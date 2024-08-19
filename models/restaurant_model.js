@@ -3,15 +3,20 @@ const { Schema } = mongoose;
 
 const restaurantSchema = new Schema(
     {
-        title: {
+        name: {
           type: String,
-          required: [true, "Resturant title is required"],
+          required: [true, "resturant title is required"],
           unique:true
+        },
+
+        address: {
+          type: String,
+          required: [true, 'address is required']
         },
         
         hotline:{ 
           type: String,
-          required:[true, "Hotline number is required"],
+          required:[true, "hotline number is required"],
           unique:true
         },
 
@@ -20,7 +25,15 @@ const restaurantSchema = new Schema(
           default:""
         },
 
-        foods: { type: Array },
+        categories: [{
+          type: Schema.Types.ObjectId,
+          ref: 'Category'
+        }],
+
+        foods: [{
+          type: Schema.Types.ObjectId,
+          ref: 'Food'
+        }],
 
         time: {
           type: String,

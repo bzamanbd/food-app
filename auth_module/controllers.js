@@ -18,7 +18,6 @@ export const signup = async(req, res,next)=>{
     if(!isValidEmail(email))return next(appErr('Invalid email format',400))
     
     try { 
-        
         const emailExists = await userModel.findOne({email})
 
         if (emailExists){
@@ -48,20 +47,20 @@ export const signup = async(req, res,next)=>{
 
         await user.save();
         
-        if(req.file){ 
-            const filename = await processImage(
-                path.join('./temp', req.file.filename),
-                './public/avatars',
-                100,
-                90
-            );
+        if(user && req.file){ 
+            const filename = await processImage({ 
+                inputPath: path.join('./temp',req.file.filename),
+                outputDir: './public/avatars',
+                imgWidth: 100,
+                imgQuality: 80
+            })
+
             user.avatar = path.join('./public/avatars', filename);
             await user.save();
 
             // Clean up temporary file after processing
             deleteFile(path.join('./temp', req.file.filename));
         }
-        
 
         user.password = undefined
         user.answer = undefined
@@ -87,6 +86,7 @@ export const signin = async(req,res, next)=>{
         
         if(!isMatch)return next(appErr('Invalid Credentials',401)) 
         
+        // eslint-disable-next-line no-undef
         const tocken = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn: '1h'}) 
 
         appRes(res,200,'','Login success!',{tocken})

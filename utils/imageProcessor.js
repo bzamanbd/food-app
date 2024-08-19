@@ -3,7 +3,7 @@ import path from 'path'
 import fs from 'fs'
 
 
-export const processImage = async (inputPath, outputDir, widthValue,qualityValue) => {
+export const processImage = async ({ inputPath, outputDir, imgWidth,imgQuality }) => {
     // Create the folder if it doesn't exist
     if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
@@ -17,14 +17,14 @@ export const processImage = async (inputPath, outputDir, widthValue,qualityValue
 
     try {
         await sharp(inputPath)
-        .resize(widthValue)
+        .resize(imgWidth)
         .toFormat('jpeg')
-        .jpeg({ quality:qualityValue })
+        .jpeg({ quality:imgQuality })
         .toFile(outputPath);
         
         return filename; // Return the filename to save it to the user model
-    } catch (error) {
-        throw new Error('Image processing failed');
+    } catch (err) {
+        throw new Error('Image processing failed',err);
     }
 };
 

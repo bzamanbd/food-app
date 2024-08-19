@@ -15,6 +15,7 @@ export const isLoggedIn = async (req, res, next) => {
   if (!token) return next(appErr('Unauthorized',401)) 
  
   try {
+    // eslint-disable-next-line no-undef
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await userModel.findById({_id:payload.id})
@@ -27,6 +28,7 @@ export const isLoggedIn = async (req, res, next) => {
 
     next();
 
+  // eslint-disable-next-line no-unused-vars
   } catch (e) {
     return next(appErr('Tocken is expired or incorrect',498))
   }

@@ -16,7 +16,7 @@ const userSchema = new Schema(
 
         password:{ 
             type: String,
-            required: [true, "email name is required"],
+            required: [true, "password is required"],
         },
 
         phone: {
@@ -24,7 +24,9 @@ const userSchema = new Schema(
             required: [true, "phone number is require"],
         },
         
-        address: { type: Array },
+        address: { 
+            type: String 
+        },
 
         avatar: {
             type: String,
@@ -46,6 +48,11 @@ const userSchema = new Schema(
             default: "client",
             enum: ["client", "admin", "vendor", "driver"],
         },
+
+        orders: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Order'
+        }],
         
     },
     { timestamps:true }

@@ -1,5 +1,6 @@
 import express from 'express' 
 import 'dotenv/config'
+// eslint-disable-next-line no-unused-vars
 import colors from 'colors'
 import globalErrorHandler from './middlewares/globalErrorHandler.js'
 import router from './routes/index.js'
@@ -10,6 +11,7 @@ import { connectDb} from './db_config/config.js'
 connectDb()
 
 const app = express() 
+// eslint-disable-next-line no-undef
 const port = process.env.PORT || 4011
 
 app.use(express.json(),router,globalErrorHandler)

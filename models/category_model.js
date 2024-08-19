@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const categorySchema = new Schema(
     {
-        title:{
+        name:{
             type: String,
             required: [true, "Category title is required"],
             unique:true
@@ -12,7 +12,18 @@ const categorySchema = new Schema(
         image:{
             type: String,
             default:""
-        }
+        },
+
+        restaurant: {
+            type: Schema.Types.ObjectId,
+            ref: 'Restaurant',
+            required: [true,'restaurant id is required']
+        },
+
+        foods: [{
+            type: Schema.Types.ObjectId,
+            ref: 'Food'
+        }],
         
     },
     { timestamps:true }

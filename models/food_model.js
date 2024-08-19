@@ -3,36 +3,38 @@ const { Schema } = mongoose;
 
 const foodSchema = new Schema(
     {
-        title: {
+        name: {
           type: String,
-          required: [true, "Food title is required"],
+          required: [true, "food name is required"],
         },
 
         description: {
-            type: String,
-            default:""
-          },
-        
-        category:{ 
             type: String,
             default:""
         },
 
         price: { 
             type: Number,
-            required: [true,"Price is required"]
+            required: [true,"price is required"]
+        },
+        
+        category: {
+            type: Schema.Types.ObjectId,
+            ref: 'Category',
+            required: [true, 'category is required']
         },
 
         restaurant: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Resturant",
-          },
+            type: Schema.Types.ObjectId,
+            ref: 'Restaurant',
+            required: [true, 'restaurant id is required']
+        },
         
         images: { type: Array },
 
         videos:{ type: Array },
 
-        foodTags:{ type:Array },
+        tags:{ type:Array },
 
         code:{ type:String },
 

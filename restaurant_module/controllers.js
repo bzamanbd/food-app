@@ -39,20 +39,17 @@ export const createRestaurant = async(req, res,next)=>{
 
         await restaurant.save()
 
-        if (req.file) {
-            const filename = await processImage(
-                path.join('./temp', req.file.filename),
-                './public/logos',
-                100,
-                90
-            );
-
+        if (restaurant && req.file) {
+            const filename = await processImage({ 
+                inputPath: path.join('./temp', req.file.filename),
+                outputDir: './public/logos',
+                imgWidth: 100,
+                imgQuality: 80
+            })
             restaurant.logo = path.join('./public/logos', filename);
             await restaurant.save();
-
             // Clean up temporary file after processing
             deleteFile(path.join('./temp', req.file.filename));
-
         }
 
         appRes(res,200,'',`${restaurant.title} is created!`,{restaurant})

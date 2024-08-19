@@ -3,23 +3,41 @@ const { Schema } = mongoose;
 
 const orderSchema = new Schema(
     {
-        foods:[
-            { 
-                type: mongoose.Schema.Types.ObjectId, 
-                ref: "Food" 
+
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            required: [true, 'user is required']
+        },
+
+        restaurant: {
+            type: Schema.Types.ObjectId,
+            ref: 'Restaurant',
+            required: [true, 'restaurant is required']
+        },
+
+        items: [{
+            food: {
+                type: Schema.Types.ObjectId,
+                ref: 'Food',
+                required: [true,'food is required']
+            },
+            quantity: {
+                type: Number,
+                required: [true, 'quintity is required']
             }
-        ],
+        }],
+
+        totalAmount: {
+            type: Number,
+            required: [true,'total ammount is required']
+        },
 
         payment:{},
 
-        buyer:{ 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: "User"
-        },
-
         status:{ 
             type: String, 
-            enum:["preparing","prepared","on the way", "delivered"],
+            enum:["preparing","prepared","on the way", "delivered", "cancelled"],
             default:"preparing"
         }
 

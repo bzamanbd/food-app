@@ -1,4 +1,6 @@
-const data = {
+// eslint-disable-next-line no-unused-vars
+const data = [
+  {
     title: "Pizza Shop",
     imageUrl:
       "https://www.zilliondesigns.com/blog/wp-content/uploads/Dominos-Pizza-logo-2.jpg",
@@ -27,6 +29,9 @@ const data = {
       longitudeDelta: "1234",
       address: "mumbai india",
     },
+  },
+  
+  {
     title: "burger king",
     imageUrl:
       "https://w1.pngwing.com/pngs/264/707/png-transparent-burger-logo-burger-king-hamburger-milkshake-fast-food-restaurant-yellow.png",
@@ -55,4 +60,5 @@ const data = {
       longitudeDelta: "1234",
       address: "mumbai india",
     },
-  };
+  }
+]

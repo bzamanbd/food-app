@@ -13,13 +13,13 @@ export const createFood = async(req, res,next)=>{
     const videoFolderName = 'videos'; // Dynamic folder name for videos
     
     try { 
-        const {title,description,category,price,foodTags,code,isAvailable,rating,ratingCount} = req.body
-
+        const {title,description,category,price,restaurant,foodTags,code,isAvailable,rating,ratingCount} = req.body
         const food = new foodModel({ 
             title,
             description,
             category, 
             price,
+            restaurant,
             images,
             videos,
             foodTags,
@@ -30,24 +30,23 @@ export const createFood = async(req, res,next)=>{
         })
         await food.save()
 
-        // Process and move images
-        const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia({files:images,destinationDir:imageFolderName,imgSize:800,imgQuality:80}) : [];
+        if(food){
+            // Process and move images
+            const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia({files:images,destinationDir:imageFolderName,imgSize:800,imgQuality:80}) : [];
 
-        // Process and move videos
-        const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia({files:videos,destinationDir:videoFolderName,isImage:false,videoSize:360}) : [];
+            // Process and move videos
+            const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia({files:videos,destinationDir:videoFolderName,isImage:false,videoSize:360}) : [];
 
-        const foodImages = []
-        const foodVideos = []
+            const foodImages = []
+            const foodVideos = []
 
-        pathTrimmer({items:processedImages,newItems:foodImages})
-        pathTrimmer({items:processedVideos,newItems:foodVideos})
-        
-        if(food){ 
+            pathTrimmer({items:processedImages,newItems:foodImages})
+            pathTrimmer({items:processedVideos,newItems:foodVideos}) 
+
             food.images = foodImages;
             food.videos = foodVideos;
+            await food.save();
         }
-
-        await food.save();
 
         await mediaProcessor.deleteTempFiles([...images, ...videos]);
 

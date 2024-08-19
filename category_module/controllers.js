@@ -23,14 +23,13 @@ export const createCategory = async(req, res,next)=>{
         const category = new categoryModel({ title })
         await category.save()
         
-        if (req.file) {
-            const filename = await processImage(
-                path.join('./temp', req.file.filename),
-                './public/categories',
-                100,
-                90
-            );
-
+        if (category && req.file) {
+            const filename = await processImage({
+                inputPath: path.join('./temp', req.file.filename),
+                outputDir: './public/categories',
+                imgWidth: 100,
+                imgQuality: 80
+            })
             category.image = path.join('./public/categories', filename);
             await category.save();
 

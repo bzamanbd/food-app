@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 const globalErrorHandler =(err,req,res,next)=>{
     const status = err.status? err.status : "False"
     const message = err.message
