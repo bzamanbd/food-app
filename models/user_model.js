@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
     {
-        userName:{
+        name:{
             type: String,
             required: [true, "user name is required"],
         },

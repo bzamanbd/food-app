@@ -11,9 +11,9 @@ import { deleteFile, processImage } from "../utils/imageProcessor.js"
 
 export const signup = async(req, res,next)=>{ 
     
-    const {userName,email,password,address,phone,question,answer,role} = req.body
+    const {name,email,password,phone,address,avatar,question,answer,role,orders} = req.body
     
-    if(!userName || !email || !password || !phone || !question || !answer) return next(appErr('name,email,password,phone,question and answer are required'),400) 
+    if(!name || !email || !password || !phone || !question || !answer) return next(appErr('name,email,password,phone,question and answer are required'),400) 
     
     if(!isValidEmail(email))return next(appErr('Invalid email format',400))
     
@@ -35,14 +35,16 @@ export const signup = async(req, res,next)=>{
         const getRole = (email) => adminEmails.includes(email) ? 'admin' : role
 
         const user = new userModel({ 
-            userName,
+            name,
             email,
             password:hashedPass,
-            address,
             phone,
+            address,
+            avatar,
             question,
             answer:hashedAnswer,
-            role:getRole(email)
+            role:getRole(email), 
+            orders,
         })
 
         await user.save();
