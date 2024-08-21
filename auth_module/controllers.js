@@ -11,42 +11,36 @@ import { deleteFile, processImage } from "../utils/imageProcessor.js"
 
 export const signup = async(req, res,next)=>{ 
     
-    const {name,email,password,phone,address,avatar,question,answer,role,orders} = req.body
+    const payload = req.body
     
-    if(!name || !email || !password || !phone || !question || !answer) return next(appErr('name,email,password,phone,question and answer are required'),400) 
+    if(!payload.name || !payload.email || !payload.password || !payload.phone || !payload.question || !payload.answer) return next(appErr('name,email,password,phone,question and answer are required'),400) 
     
-    if(!isValidEmail(email))return next(appErr('Invalid email format',400))
+    if(!isValidEmail(payload.email))return next(appErr('Invalid email format',400))
     
     try { 
-        const emailExists = await userModel.findOne({email})
+        const emailExists = await userModel.findOne({email: payload.email})
 
         if (emailExists){
             if(req.file){ 
                 deleteFile(path.join('./temp', req.file.filename))
             }
-            return next(appErr(`${email} email is exists. Try another`,401))
+            return next(appErr(`${payload.email} email is exists. Try another`,401))
         }
         
-        if(role === 'admin' && !adminEmails.includes(email))return next(appErr('You are not authorized to create an admin account',403))
+        if(payload.role === 'admin' && !adminEmails.includes(payload.email))return next(appErr('You are not authorized to create an admin account',403))
         
-        const hashedPass = await bcrypt.hash(password, 10) 
-        const hashedAnswer = await bcrypt.hash(answer, 10) 
+        const hashedPass = await bcrypt.hash(payload.password, 10) 
+        const hashedAnswer = await bcrypt.hash(payload.answer, 10) 
         
-        const getRole = (email) => adminEmails.includes(email) ? 'admin' : role
+        const email = payload.email;
+        const getRole = (email) => adminEmails.includes(email) ? 'admin' : payload.role
 
-        const user = new userModel({ 
-            name,
-            email,
-            password:hashedPass,
-            phone,
-            address,
-            avatar,
-            question,
-            answer:hashedAnswer,
-            role:getRole(email), 
-            orders,
-        })
+        payload.password = hashedPass;
+        payload.answer = hashedAnswer;
+        payload.role = getRole(email); 
 
+        const user = new userModel(payload)
+        
         await user.save();
         
         if(user && req.file){ 
