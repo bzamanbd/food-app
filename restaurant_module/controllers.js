@@ -89,7 +89,7 @@ export const editRestaurentById = async(req, res,next)=>{
         
     try { 
         // Validate the request body (additional validation can be added as needed)
-        if (!payload || Object.keys(payload).length === 0) return next(appErr('No data provided for update'))
+        if (!payload) return next(appErr('No data provided for update'))
         
         const existRestaurant = await restaurantModel.findById(_id)
         if(!existRestaurant)return next(appErr('Restaurant not found!',404))
@@ -99,11 +99,6 @@ export const editRestaurentById = async(req, res,next)=>{
             // Get && delete the old logo from db
             oldImageRemover({existImage: existRestaurant.logo})
 
-            // if (existRestaurant.logo) {
-            //     const oldLogoPath = path.join(existRestaurant.logo)
-            //     fs.unlinkSync(oldLogoPath)
-            // }
-            
             const filename = await processImage({ 
                 inputPath: path.join('./temp', req.file.filename),
                 outputDir: './public/logos',

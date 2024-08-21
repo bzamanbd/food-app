@@ -1,12 +1,12 @@
 import appErr from "../utils/appErr.js"
 import bcrypt from "bcryptjs"
-import mongoose from 'mongoose'
 import 'dotenv/config'
 import appRes from "../utils/appRes.js"
 import userModel from '../models/user_model.js'
 import path from "path"
 import { processImage, deleteFile } from '../utils/imageProcessor.js';
 import { oldImageRemover } from "../utils/oldImageRemover.js"
+
 
 
 export const fetchUsers = async(req, res,next)=>{ 
@@ -45,15 +45,17 @@ export const updateProfile = async(req,res, next)=>{
     const  payload = req.body
 
     if(!_id) return next(appErr('_id is required'),400) 
-    if (!mongoose.Types.ObjectId.isValid(_id)) return next(appErr('Invalid ID format',400))
-
+    
     try {
         // Validate the request body (additional validation can be added as needed)
-        if (!payload || Object.keys(payload).length === 0) return next(appErr('No data provided for update'))
-
+        if (!payload) return next(appErr('No data provided for update'))
+        
         const existUser = await userModel.findById(_id)
         if(!existUser)return next(appErr('User not found!',404))
-        
+
+        // No one can change the predefined admin emails
+        if(existUser.role === 'admin' && payload.email) return next(appErr(`You don't have permission to change the admin email`,400))
+
         if(req.file){ 
             // Get && delete the old avatar from db
             oldImageRemover({existImage:existUser.avatar})
@@ -78,7 +80,7 @@ export const updateProfile = async(req,res, next)=>{
         
         if(!user)return next(appErr('Profile is not updated',400))
         appRes(res,200,'','Profile update success!',{user})
-    
+
     } catch (e) {
         if (req.file) {
             deleteFile(path.join('./temp', req.file.filename)); // Clean up on error
@@ -99,7 +101,7 @@ export const fetchQuestion = async(req, res,next)=>{
         
         const question = user.question
         
-        appRes(res,200,'',`${user.userName}'s question`,{question})
+        appRes(res,200,'',`${user.name}'s question`,{question})
 
     } catch (e) {
         return next(appErr(e.message,500))
