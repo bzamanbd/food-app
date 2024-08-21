@@ -1,11 +1,11 @@
 import {Router} from "express"
 import {fetchUsers,fetchProfile,updateProfile,fetchQuestion,resetPassword,updatePassword,deleteOwnAccount} from "./controllers.js"
-import { isLoggedIn } from "../middlewares/authMiddlewares.js"
+import { isAdmin, isLoggedIn } from "../middlewares/authMiddlewares.js"
 
 
 const routes = Router() 
 
-routes.get("/", isLoggedIn, fetchUsers)
+routes.get("/", isLoggedIn, isAdmin, fetchUsers)
 routes.get("/user/profile", isLoggedIn, fetchProfile)
 routes.put("/user/update", isLoggedIn, updateProfile)
 routes.get("/user/question",  fetchQuestion)

@@ -1,8 +1,12 @@
 import appErr from "../utils/appErr.js"
 import bcrypt from "bcryptjs"
+import mongoose from 'mongoose'
 import 'dotenv/config'
 import appRes from "../utils/appRes.js"
 import userModel from '../models/user_model.js'
+import path from "path"
+import { processImage, deleteFile } from '../utils/imageProcessor.js';
+import { oldImageRemover } from "../utils/oldImageRemover.js"
 
 
 export const fetchUsers = async(req, res,next)=>{ 
@@ -30,7 +34,7 @@ try {
     if (!user) return next(appErr('User not found!',404))
         
     user.password = undefined
-    appRes(res,200,'',`${user.userName}'s profile`,{user})
+    appRes(res,200,'',`${user.name}'s profile`,{user})
 } catch (e) {
     return next(appErr(e.message,500))
 }
@@ -38,19 +42,47 @@ try {
 
 export const updateProfile = async(req,res, next)=>{ 
     const _id = req.user.id 
+    const  payload = req.body
+
     if(!_id) return next(appErr('_id is required'),400) 
+    if (!mongoose.Types.ObjectId.isValid(_id)) return next(appErr('Invalid ID format',400))
 
     try {
-        const user = await userModel.findById(_id)
-        if(!user)return next(appErr('User not found!',404)) 
+        // Validate the request body (additional validation can be added as needed)
+        if (!payload || Object.keys(payload).length === 0) return next(appErr('No data provided for update'))
+
+        const existUser = await userModel.findById(_id)
+        if(!existUser)return next(appErr('User not found!',404))
         
-        const {userName,address,phone} = req.body
-        if(userName) user.userName = userName
-        if(address) user.address = address
-        if(phone) user.phone = phone
-        await user.save()
+        if(req.file){ 
+            // Get && delete the old avatar from db
+            oldImageRemover({existImage:existUser.avatar})
+
+            const filename = await processImage({ 
+                inputPath: path.join('./temp', req.file.filename),
+                outputDir: './public/avatars',
+                imgWidth: 100,
+                imgQuality: 80
+            })
+            payload.avatar = path.join('./public/avatars', filename);
+            // Clean up temporary file after processing
+            deleteFile(path.join('./temp', req.file.filename));
+                 
+        }
+
+        const user = await userModel.findByIdAndUpdate(
+            _id,
+            {$set:payload},
+            {new:true, runValidators:true}
+        )
+        
+        if(!user)return next(appErr('Profile is not updated',400))
         appRes(res,200,'','Profile update success!',{user})
+    
     } catch (e) {
+        if (req.file) {
+            deleteFile(path.join('./temp', req.file.filename)); // Clean up on error
+        }
         return next(appErr(e.message,500))
     } 
 
@@ -119,7 +151,6 @@ export const updatePassword = async(req,res, next)=>{
     } 
 
 }
-
 
 export const deleteOwnAccount = async(req,res, next)=>{ 
     const _id = req.user.id
