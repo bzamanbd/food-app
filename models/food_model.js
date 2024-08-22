@@ -31,20 +31,32 @@ const foodSchema = new Schema(
             required: [true, 'restaurant id is required']
         },
         
-        images: { type: Array },
+        images: { 
+            type: [String],
+            default: [] 
+        },
 
-        videos:{ type: Array },
+        videos: { 
+            type: [String],
+            default: [] 
+        },
 
-        tags:{ type:Array },
+        tags: { 
+            type: [String],
+            default : []
+        },
 
-        code:{ type:String },
+        code: { 
+            type: String,
+            default: '' 
+        },
 
         isAvailable:{
             type:Boolean,
             default:true
         },
 
-        rating:{
+        rating: {
             type: Number,
             default:1,
             min:1,
@@ -52,7 +64,8 @@ const foodSchema = new Schema(
         },
         
         ratingCount:{
-            type: String
+            type: String,
+            default: ''
         }
     },
     { timestamps:true }

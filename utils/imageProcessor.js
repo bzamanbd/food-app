@@ -38,4 +38,3 @@ export const deleteFile = (filePath) => {
   }
 };
 
-// export default { processImage, deleteFile };

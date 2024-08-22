@@ -7,7 +7,6 @@ import mediaProcessor from '../utils/mediaProcessor.js'
 import { pathTrimmer } from '../utils/pathTrimmer.js';
 import { deleteFile } from "../utils/oldImageRemover.js";
 
-
 export const createFood = async(req, res,next)=>{ 
     const payload = req.body;
     if(!payload.name || !payload.price)return next(appErr('name & price are required',400))
@@ -30,7 +29,7 @@ export const createFood = async(req, res,next)=>{
 
         if(food){
             // Process and move images
-            const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia({files:images,destinationDir:imageFolderName,imgSize:800,imgQuality:80}) : [];
+            const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia({files:images,destinationDir:imageFolderName,imgSize:50,imgQuality:80}) : [];
 
             // Process and move videos
             const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia({files:videos,destinationDir:videoFolderName,isImage:false,videoSize:360}) : [];
@@ -110,90 +109,91 @@ export const fetchFoodById = async(req, res,next)=>{
 
 export const editFood = async(req, res,next)=>{ 
     const _id = req.params.id
-    const payload = req.body
-    const { images = [], videos = [] } = req.files;
-    
-    const imageFolderName = 'images'; // Dynamic folder name for images
-    const videoFolderName = 'videos'; // Dynamic folder name for videos
 
     if (!mongoose.Types.ObjectId.isValid(_id)) return next(appErr('Invalid ID format',400)) 
 
     if(!_id) return next(appErr('id is required',400))
         
     try {
-        // Validate the request body (additional validation can be added as needed)
-        if (!payload) return next(appErr('No data provided for update',400))
+        const food = await foodModel.findById(_id);
+        if (!food) {
+            appRes(res,404,'false',`${food.name} not found`,{})
 
-        const existFood = await foodModel.findById(_id)
-        // Delete images & videos files from the temp folder if the food is not exists in db
-        
-        if(!existFood){
-            req.file.mimetype.startsWith('image/')? await mediaProcessor.deleteTempFiles([...images]) : await mediaProcessor.deleteTempFiles([...videos]);
-            return next(appErr('Food not found!',404))
-        }
-        
-        if (payload.imagesToRemove) {
-            // Parse the imagesToRemove array from the request body
-            let imagesToRemove = [];
-            imagesToRemove = JSON.parse(payload.imagesToRemove); // Convert JSON string to array
-            // Delete old images if any are specified
-            imagesToRemove.forEach(imageUrl => {
-                deleteFile(imageUrl); // Utility function to delete file from server
-                existFood.images = existFood.images.filter(img => img !== imageUrl);
-            });
-            await existFood.save();
-        }
-        
-        if (payload.videosToRemove) {
-            // Parse the videosToRemove array from the request body
-            let videosToRemove = [];
-            videosToRemove = JSON.parse(payload.videosToRemove); // Convert JSON string to array
-            // Delete old videos if any are specified
-            videosToRemove.forEach(videoUrl => {
-                deleteFile(videoUrl); // Utility function to delete file from server
-                existFood.videos = existFood.videos.filter(vid => vid !== videoUrl);
-            });
-            await existFood.save();
-        }
-        
-        if(req.files){ 
-            // Add new images into payload.images
-            if(req.file.mimetype.startsWith('image/')){
-                const newImages = req.files.map(file => file.path); // Array of new image paths
-                payload.images.push(...newImages);
-                // Process and move images
-                const processedImages = images.length > 0 ? await mediaProcessor.processAndMoveMedia({files:images,destinationDir:imageFolderName,imgSize:800,imgQuality:80}) : [];
-                const foodImages = []
-                pathTrimmer({items:processedImages,newItems:foodImages})
-                payload.images = foodImages;
+            if(req.files){ 
+                // Clean up temporary files
+                if(Array.isArray(req.files['images'])){
+                    await mediaProcessor.deleteTempFiles(req.files['images'])
+                }
+                if(Array.isArray(req.files['videos'])){
+                    await mediaProcessor.deleteTempFiles(req.files['videos'])
+                }
             }
-
-            // Add new videos into payload.videos
-            if(req.file.mimetype.startsWith('video/')){
-                const newVideos = req.files.map(file => file.path); // Array of new image paths
-                payload.videos.push(...newVideos);
-                // Process and move videos
-                const processedVideos = videos.length > 0 ? await mediaProcessor.processAndMoveMedia({files:videos,destinationDir:videoFolderName,isImage:false,videoSize:360}) : [];
-                const foodVideos = []
-                pathTrimmer({items:processedVideos,newItems:foodVideos})
-                payload.videos = foodVideos;
-            }
-
-            // Clean up temporary file after processing
-            await mediaProcessor.deleteTempFiles([...images, ...videos])
         }
 
-        const food = await foodModel.findByIdAndUpdate(
-            _id,
-            {$set:payload},
-            {new:true, runValidators:true}
-        )
+        // Handle images and videos to remove
+        let imagesToRemove = req.body.imagesToRemove ? JSON.parse(req.body.imagesToRemove) : [];
+        let videosToRemove = req.body.videosToRemove ? JSON.parse(req.body.videosToRemove) : [];
 
-        if (!food) return next(appErr('Food not found!',404))
-        appRes(res,200,'',`${food.name} is updated!`,{food})    
+        // Remove old images
+        imagesToRemove.forEach(imageUrl => {
+            deleteFile(imageUrl); // Utility function to delete file from server
+            food.images = food.images.filter(img => img !== imageUrl);
+        });
+
+        // Remove old videos
+        videosToRemove.forEach(videoUrl => {
+            deleteFile(videoUrl); // Utility function to delete file from server
+            food.videos = food.videos.filter(vid => vid !== videoUrl);
+        });
+
+        // Add new images
+        if (req.files['images']) {
+            // Process and move images
+            const processedImages = await mediaProcessor.processAndMoveMedia({files:req.files['images'],destinationDir:'images',imgSize:50,imgQuality:80});
+            const foodImages = []
+            pathTrimmer({items:processedImages,newItems:foodImages})
+            food.images.push(...foodImages);
+            await food.save();
+        }
+       
+        // Add new videos
+        if (req.files['videos']) { 
+            // Process and move videos
+            const processedVideos = await mediaProcessor.processAndMoveMedia({files:req.files['videos'],destinationDir:'videos',isImage:false,videoSize:360});
+            const foodVideos = []
+            pathTrimmer({items:processedVideos,newItems:foodVideos}) 
+            food.videos.push(...foodVideos);
+            await food.save();
+        }
+
+        // Update other fields if necessary
+        if (req.body.name) food.name = req.body.name;
+        if (req.body.description) food.description = req.body.description;
+        if (req.body.price) food.price = req.body.price;
+        if (req.body.category) food.category = req.body.category;
+
+        // Save the updated food item
+        await food.save();
+
+        // Clean up temporary files
+        if(Array.isArray(req.files['images'])){
+            await mediaProcessor.deleteTempFiles(req.files['images'])
+        }
+
+        if(Array.isArray(req.files['videos'])){
+            await mediaProcessor.deleteTempFiles(req.files['videos'])
+        }
+
+        appRes(res,200,'',`${food.name} is updated!`,{food})
     } catch (e) {
-            await mediaProcessor.deleteTempFiles([...images, ...videos]);
-            return next(appErr(e.message,500))
+        // Clean up temporary files
+        if(Array.isArray(req.files['images'])){
+            await mediaProcessor.deleteTempFiles(req.files['images'])
+        }
+        if(Array.isArray(req.files['videos'])){
+            await mediaProcessor.deleteTempFiles(req.files['videos'])
+        }
+        return next(appErr(e.message,500))
         }
 }
 
