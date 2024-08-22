@@ -6,6 +6,7 @@ const foodSchema = new Schema(
         name: {
           type: String,
           required: [true, "food name is required"],
+          unique:true
         },
 
         description: {
