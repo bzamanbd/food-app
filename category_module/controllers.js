@@ -5,6 +5,7 @@ import appRes from "../utils/appRes.js"
 import categoryModel from '../models/category_model.js';
 import { deleteFile, processImage } from "../utils/imageProcessor.js";
 import path from "path";
+import { oldImageRemover } from '../utils/oldImageRemover.js';
 
 
 export const createCategory = async(req, res,next)=>{ 
@@ -81,18 +82,40 @@ export const fetchCategoryById = async(req, res,next)=>{
 
 export const updatCategory = async(req, res,next)=>{ 
     const _id = req.params.id
-    const {title,imageUrl} = req.body
+    const payload = req.body
 
     if (!mongoose.Types.ObjectId.isValid(_id)) return next(appErr('Invalid ID format',400)) 
-
-    if(!_id || !title) return next(appErr('id & title are required',400))
-        
+    
     try { 
-        const category = await categoryModel.findByIdAndUpdate(_id,{title,imageUrl},{new:true})
-
-        if (!category) return next(appErr('Category not found!',404))
+        // Validate the request body (additional validation can be added as needed)
+        if (!payload) return next(appErr('No data provided for update',400))
         
-        appRes(res,200,'',`${category.title} is updated!`,{category})
+        const existCategory = await categoryModel.findById(_id)
+        if(!existCategory)return next(appErr('Category not found!',404))
+        
+        if(req.file){ 
+            // Get && delete the old avatar from db
+            oldImageRemover({existImage:existCategory.image})
+    
+            const filename = await processImage({ 
+                inputPath: path.join('./temp', req.file.filename),
+                outputDir: './public/categories',
+                imgWidth: 100,
+                imgQuality: 80
+            })
+            payload.image = path.join('./public/categories', filename);
+            // Clean up temporary file after processing
+            deleteFile(path.join('./temp', req.file.filename));
+                     
+        }
+        const category = await categoryModel.findByIdAndUpdate(
+            _id,
+            {$set:payload},
+            {new:true, runValidators:true}
+        )
+        
+        if(!category)return next(appErr('Category is not updated',400))
+        appRes(res,200,'','Category update success!',{category})
     } catch (e) {
             return next(appErr(e.message,500))
         }

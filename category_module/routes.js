@@ -9,7 +9,7 @@ const categoryImageUploader = imageUploader('image');
 routes.post("/category",isLoggedIn,isAdmin,categoryImageUploader,createCategory)
 routes.get("/",fetchCategories)
 routes.get("/category/:id",fetchCategoryById)
-routes.put("/category/:id",isLoggedIn,isAdmin,updatCategory)
+routes.put("/category/:id",isLoggedIn,isAdmin,categoryImageUploader,updatCategory)
 routes.delete("/category/:id",isLoggedIn,isAdmin,deleteCategory)
 
 export default routes
